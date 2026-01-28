@@ -1,0 +1,15 @@
+[workspace]
+authors = ["Sylens Wong <qiumin14@163.com>"]
+channels = ["conda-forge"]
+name = "opencode-recipe"
+platforms = ["linux-aarch64", "linux-64"]
+version = "0.1.0"
+preview = ["pixi-build"]
+
+[package]
+name = "opencode"
+version = "1.1.35"
+
+[package.build.backend]
+name = "pixi-build-rattler-build"
+version = "0.3.*" 

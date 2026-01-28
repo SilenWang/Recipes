@@ -1,0 +1,44 @@
+package:
+  name: opencode
+  version: 1.1.35
+
+source:
+  - if: target_platform == "linux-64"
+    then:
+      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-x64-musl.tar.gz
+      sha256: 254f69e2a898e2c813fcb545998ce5b234e8387345602fa70bc19915b31f1cdc
+      file_name: opencode.tar.gz
+  - if: target_platform == "linux-aarch64"
+    then:
+      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-arm64-musl.tar.gz
+      sha256: eae559c807869fe76106b8af23a67c85077054591427e4b822739acda4da2a6d
+      file_name: opencode.tar.gz
+
+build:
+  number: 0
+  script: |
+    tar xvf opencode.tar.gz
+    chmod +x opencode
+    mkdir -p $PREFIX/bin
+    mv opencode $PREFIX/bin/
+  prefix_detection:
+    ignore_binary_files: true
+  dynamic_linking:
+    binary_relocation: false
+
+requirements:
+  build:
+    - tar
+    - gzip
+
+tests:
+  - script:
+      - opencode -h
+
+about:
+  homepage: https://opencode.ai/
+  license: MIT
+  summary: 'The open source coding agent.'
+  description: |
+    The open source coding agent.
+  repository: https://github.com/anomalyco/opencode
