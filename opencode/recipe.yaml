@@ -5,31 +5,31 @@ package:
 source:
   - if: target_platform == "linux-64"
     then:
-      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-x64-musl.tar.gz
-      sha256: 254f69e2a898e2c813fcb545998ce5b234e8387345602fa70bc19915b31f1cdc
+      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-x64.tar.gz
+      sha256: 451f5a36e2875b5540adf55e8cc9e144902b44959a6f31899fc21876b38b31ae
       file_name: opencode.tar.gz
   - if: target_platform == "linux-aarch64"
     then:
-      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-arm64-musl.tar.gz
-      sha256: eae559c807869fe76106b8af23a67c85077054591427e4b822739acda4da2a6d
+      url: https://github.com/anomalyco/opencode/releases/download/v1.1.35/opencode-linux-arm64.tar.gz
+      sha256: e7544ae14afb10e75d28a3623b1fd33d60e17f372106665566ca4e085c2b157b
       file_name: opencode.tar.gz
 
 build:
   number: 0
   script: |
     tar xvf opencode.tar.gz
-    chmod +x opencode
     mkdir -p $PREFIX/bin
-    mv opencode $PREFIX/bin/
+    mv opencode $PREFIX/bin/opencode
+    chmod 755 $PREFIX/bin/opencode
+    
   prefix_detection:
     ignore_binary_files: true
   dynamic_linking:
     binary_relocation: false
 
 requirements:
-  build:
+  build:  
     - tar
-    - gzip
 
 tests:
   - script:
