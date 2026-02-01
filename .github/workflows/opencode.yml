@@ -18,16 +18,6 @@ jobs:
         with:
           repository: SilenWang/Recipes
 
-      - name: Debug directory structure
-        run: |
-          echo "=== 调试信息 ==="
-          echo "当前目录: $(pwd)"
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          echo "目录结构:"
-          find . -type d | sort
-          echo "查找所有 toml 文件:"
-          find . -name "*.toml" -type f
-
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.4
         with:
@@ -35,7 +25,6 @@ jobs:
           auth-host: prefix.dev
           auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
           working-directory: opencode
-
 
       - name: Get latest release from origin
         id: origin_release
@@ -50,7 +39,7 @@ jobs:
           cd opencode
 
           # 获取当前版本
-          version=v$(pixi search -q --no-progress -p {{ matrix.platform }} -c https://prefix.dev/sylens opencode | grep -oP '\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          version=v$(pixi search -q --no-progress -p ${{ matrix.platform }} -c https://prefix.dev/sylens opencode | grep -oP '\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
           
           echo "Origin Release: ${{ steps.origin_release.outputs.release }}
           echo "Current Version: $version"
