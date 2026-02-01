@@ -36,6 +36,8 @@ jobs:
 
       - name: Run Pixi Task
         run: |
+          cd opencode
+        
           # 获取当前版本
           version=v$(pixi search -q --no-progress -p ${{ matrix.platform }} -c https://prefix.dev/sylens opencode | grep -oP '\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
           
