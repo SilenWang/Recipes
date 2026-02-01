@@ -47,7 +47,7 @@ jobs:
           # 比较版本是否一致
           if [ "${{ steps.origin_release.outputs.release }}" != "$version" ]; then
             echo "Version mismatch, starting build..."
-            pixi run build {{ matrix.platform }}
+            pixi run build ${{ matrix.platform }}
             pixi upload prefix opencode.*.conda -c sylens
           else
             echo "No new release"
