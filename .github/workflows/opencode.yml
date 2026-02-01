@@ -19,6 +19,16 @@ jobs:
           repository: SilenWang/Recipes
           path: opencode
 
+      - name: Debug directory structure
+        run: |
+          echo "=== 调试信息 ==="
+          echo "当前目录: $(pwd)"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "目录结构:"
+          find . -type d | sort
+          echo "查找所有 toml 文件:"
+          find . -name "*.toml" -type f
+
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.4
         with:
