@@ -1,15 +1,19 @@
 context:
   name: opencode
-  version: "1.1.35"
+  version: 1.1.39
   repo: anomalyco/opencode
+  # 对应的 Pixi 定义的平台
+  platform: ${{ env.get("TARGET_PLATFORM", default="linux-64") }}
+  # 对应包的名称
+  architect: ${{ "linux-x64" if platform == "linux-64" else "linux-arm64" }}
 
 package:
   name: ${{ name }}
   version: ${{ version }}
 
 source:
-    url: https://github.com/anomalyco/opencode/releases/download/v${{ version }}/opencode-linux-x64.tar.gz
-    sha256: 451f5a36e2875b5540adf55e8cc9e144902b44959a6f31899fc21876b38b31ae
+    url: https://github.com/anomalyco/opencode/releases/download/v${{ version }}/opencode-${{ architect }}.tar.gz
+    sha256: f678b47a066dcd263d4d035af913a9d91f27b31e4033d2bd307ada2b229f80c7
     file_name: opencode.tar.gz
 
 build:
