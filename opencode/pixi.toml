@@ -9,9 +9,16 @@ preview = ["pixi-build"]
 [dependencies]
 rattler-build = "*"
 
-[package]
-name = "opencode"
-version = "1.1.35"
+[tasks.bump]
+cmd = "TARGET_PLATFORM={{ platform }} rattler-build bump-recipe"
+args = [    
+    { arg = "platform", default = "linux-64" },
+]
+
+[tasks.build]
+cmd = "TARGET_PLATFORM={{ platform }} pixi build"
+args = ["platform"]
+depends-on = [{ task = "install", args = ["{{ platform }}"] }]
 
 [package.build.backend]
 name = "pixi-build-rattler-build"

@@ -1,0 +1,35 @@
+name: opencode
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Specify version"
+        required: true
+        default: "1.1.35"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux-64, linux-aarch64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          repository: SilenWang/Recipes
+          path: opencode
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.63.2
+
+      - name: Run Pixi Task
+        run: |
+          export TARGET_PLATFORM=${{ matrix.platform }}
+          rattler-build bump-recipe
+          pixi build
+          
