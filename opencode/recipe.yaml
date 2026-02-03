@@ -18,7 +18,6 @@ source:
 
 build:
   number: 0
-  string: h${{ hash }}_${{ platform }}
   script: |
     tar xvf opencode.tar.gz
     mkdir -p $PREFIX/bin
