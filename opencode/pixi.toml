@@ -16,7 +16,7 @@ args = [
 ]
 
 [tasks.build]
-cmd = "TARGET_PLATFORM={{ platform }} pixi build"
+cmd = "TARGET_PLATFORM={{ platform }} pixi build -t {{ platform }}"
 args = ["platform"]
 depends-on = [{ task = "bump", args = ["{{ platform }}"] }]
 
