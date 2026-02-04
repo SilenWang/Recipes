@@ -1,0 +1,17 @@
+{
+    "name": "Recipe",
+    "build": { "dockerfile": "Dockerfile" },
+    "postCreateCommand": "pixi global install -c https://prefix.dev/sylens opencode",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "workbench.colorTheme": "Solarized Dark"
+            },
+            "extensions": [
+                "naumovs.color-highlight",
+                "tamasfe.even-better-toml",
+                "redhat.vscode-yaml"
+            ]
+        }
+    }
+}
