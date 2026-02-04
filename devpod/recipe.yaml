@@ -28,18 +28,14 @@ build:
   dynamic_linking:
     binary_relocation: false
 
-requirements:
-  build:  
-    - tar
-
 tests:
   - script:
-      - opencode -h
+      - devpod -h
 
 about:
-  homepage: https://opencode.ai/
-  license: MIT
-  summary: 'The open source coding agent.'
+  homepage: https://github.com/skevetter/devpod
+  license: Mozilla Public License Version 2.0
+  summary: 'Open-source devcontainers: works with any IDE and lets you use any cloud, kubernetes or just localhost docker.'
   description: |
-    The open source coding agent.
-  repository: https://github.com/anomalyco/opencode
+    Open-source devcontainers: works with any IDE and lets you use any cloud, kubernetes or just localhost docker.
+  repository: https://github.com/skevetter/devpod
