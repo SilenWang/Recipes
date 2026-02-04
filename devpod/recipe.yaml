@@ -34,7 +34,7 @@ tests:
 
 about:
   homepage: https://github.com/skevetter/devpod
-  license: Mozilla Public License Version 2.0
+  license: MPL-2.0
   summary: 'Open-source devcontainers: works with any IDE and lets you use any cloud, kubernetes or just localhost docker.'
   description: |
     Open-source devcontainers: works with any IDE and lets you use any cloud, kubernetes or just localhost docker.
