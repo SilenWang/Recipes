@@ -1,0 +1,54 @@
+name: mihomo
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时检查一次
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux-64, linux-aarch64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          repository: SilenWang/Recipes
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.63.2
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          working-directory: mihomo
+
+      - name: Get latest release from origin
+        id: origin_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: MetaCubeX
+          repo: mihomo
+          excludes: prerelease, draft
+
+      - name: Run Pixi Task
+        run: |
+          cd mihomo
+        
+          # 获取当前版本
+          version=v$(pixi search -q --no-progress -p ${{ matrix.platform }} -c https://prefix.dev/sylens mihomo | grep -oP '\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          
+          echo "Origin Release: ${{ steps.origin_release.outputs.release }}"
+          echo "Current Version: $version"
+          
+          # 比较版本是否一致
+          if [ "${{ steps.origin_release.outputs.release }}" != "$version" ]; then
+            echo "Version mismatch, starting build..."
+            pixi run build ${{ matrix.platform }}
+            pixi upload prefix mihomo*.conda -c sylens
+          else
+            echo "No new release"
+          fi          
