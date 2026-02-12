@@ -1,0 +1,109 @@
+
+context:
+  name: ffmpeg-rockchip
+  version: 20251107
+  repo: nyanmisaka/ffmpeg-rockchip
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  - git: https://gitee.com/nyanmisaka/mpp.git
+    branch: jellyfin-mpp
+    target_directory: rkmpp
+  - git: https://gitee.com/nyanmisaka/rga.git
+    branch: jellyfin-rga
+    target_directory: rkrga
+  - git: https://gitee.com/${{ repo }}.git
+    rev: "2eb0b5dc03d2ed7ee77f9639e2c1d83759bd0c2b"
+    target_directory: ffmpeg
+
+
+build:
+  number: 0
+  # https://github.com/conda/conda-build/issues/1616
+  # use unset SUBDIR to build in conda-build / rattler-build
+  script: |
+    export CXXFLAGS="-fpermissive"
+
+    mkdir -p rkmpp/rkmpp_build
+    cd rkmpp/rkmpp_build
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=$PREFIX/ \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_TEST=OFF \
+        ..
+    make -j $(nproc)
+    make install
+
+    cd ../../
+    meson setup rkrga rkrga_build \
+        --prefix=$PREFIX/ \
+        --libdir=lib \
+        --buildtype=release \
+        --default-library=shared \
+        -Dcpp_args=-fpermissive \
+        -Dlibdrm=false \
+        -Dlibrga_demo=false
+    meson configure rkrga_build
+    ninja -C rkrga_build install
+
+    echo "compiling ffmpeg"
+    
+    unset SUBDIR
+
+    cd ffmpeg
+
+    ./configure \
+      --prefix=$PREFIX \
+      --sysroot="$BUILD_PREFIX" \
+      --pkg-config-libdir="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig" \
+      --extra-cflags="-I$PREFIX/include" \
+      --extra-ldflags="-L$PREFIX/lib -Wl,-rpath,$PREFIX/lib" \
+      --enable-gpl \
+      --enable-version3 \
+      --enable-libdrm \
+      --enable-rkmpp \
+      --enable-rkrga
+    make -j $(nproc)
+    make install
+
+requirements:
+  build:  
+    - cmake
+    - make
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - ${{ compiler('cxx') }}
+    - ${{ cdt('libdrm-devel') }}
+    - ${{ cdt('libdrm') }}
+    - meson
+    - pkg-config
+    - pthread-stubs
+    - binutils
+    - diffutils
+    - awk
+
+  run:
+    - libdrm
+
+tests:
+  - script:
+      - ffmpeg --help
+      - ffmpeg -hwaccels | grep rkmpp
+
+about:
+  homepage: https://github.com/nyanmisaka/ffmpeg-rockchip
+  license_file:
+    - COPYING.LGPLv2.1
+    - COPYING.LGPLv3
+    - COPYING.GPLv2
+    - COPYING.GPLv3
+    - LICENSE.md
+    - CREDITS
+  summary: 'FFmpeg with async and zero-copy Rockchip MPP & RGA support'
+  description: |
+    FFmpeg with async and zero-copy Rockchip MPP & RGA support
+  repository: https://github.com/nyanmisaka/ffmpeg-rockchip
