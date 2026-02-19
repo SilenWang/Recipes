@@ -58,10 +58,7 @@ build:
 
     ./configure \
       --prefix=$PREFIX \
-      --sysroot="$BUILD_PREFIX" \
-      --pkg-config-libdir="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig" \
-      --extra-cflags="-I$PREFIX/include" \
-      --extra-ldflags="-L$PREFIX/lib -Wl,-rpath,$PREFIX/lib" \
+      --disable-doc \
       --enable-gpl \
       --enable-version3 \
       --enable-libdrm \
@@ -86,8 +83,13 @@ requirements:
     - diffutils
     - awk
 
+  host:
+    - libdrm  # 可选，如果 conda-forge 的版本可用
+    
   run:
     - libdrm
+    - ${{ pin_compatible('libdrm') }}
+
 
 tests:
   - script:
