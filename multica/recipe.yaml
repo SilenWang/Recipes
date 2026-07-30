@@ -5,7 +5,7 @@ context:
   # 对应的 Pixi 定义的平台
   platform: ${{ env.get("TARGET_PLATFORM", default="linux-64") }}
   # 对应包的名称
-  architect: ${{ "linux-amd64" if platform == "linux-64" else "linux-arm64" }}
+  architect: ${{ "linux-amd64" if platform == "linux-64" else "linux-arm64" if platform == "linux-aarch64" else "darwin-amd64" if platform == "osx-64" else "darwin-arm64" }}
 
 package:
   name: ${{ name }}

@@ -2,7 +2,7 @@
 authors = ["Sylens Wong <qiumin14@163.com>"]
 channels = ["conda-forge"]
 name = "multica-recipe"
-platforms = ["linux-aarch64", "linux-64"]
+platforms = ["linux-aarch64", "linux-64", "osx-64", "osx-arm64"]
 version = "0.1.0"
 preview = ["pixi-build"]
 
