@@ -1,0 +1,95 @@
+context:
+  name: doltlite
+  version: 0.51.15
+  # 对应的 Pixi 定义的平台
+  platform: ${{ env.get("TARGET_PLATFORM", default="linux-64") }}
+  # doltlite 在 PyPI 上按平台发布预编译 libdoltlite 的 wheel
+  wheel_linux_64: https://files.pythonhosted.org/packages/4a/25/181475dd32e0d532864d4242dd04b6a6e876f229add01b0364f2fd0b55d5/doltlite-0.51.15-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  wheel_linux_aarch64: https://files.pythonhosted.org/packages/07/b3/d4e4e3b2c7d3240b6fd3e5b7128b0c85add1158ecb730edca9b5570da2cf/doltlite-0.51.15-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+  wheel_osx_arm64: https://files.pythonhosted.org/packages/5d/fd/b6a4bdb26f5c635dccfe0198f38a1e361bfc509282aa16e53f8873147827/doltlite-0.51.15-py3-none-macosx_11_0_arm64.whl
+  sha256_linux_64: a8058f16aecc0831c82d51bc6a2990dca46e6cc0d0fdd91c598c603e0b71a293
+  sha256_linux_aarch64: 1506c7a560a01cdce9537a772ea7df1078415f65a5c121e291fa2f840070cd6b
+  sha256_osx_arm64: 1ae8ff5dd279d13ce042504305b0e04898df637b79af63ed843679ea61a0fe2d
+  wheel: ${{ wheel_linux_64 if platform == "linux-64" else (wheel_linux_aarch64 if platform == "linux-aarch64" else wheel_osx_arm64) }}
+  wheel_sha256: ${{ sha256_linux_64 if platform == "linux-64" else (sha256_linux_aarch64 if platform == "linux-aarch64" else sha256_osx_arm64) }}
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: ${{ wheel }}
+  sha256: ${{ wheel_sha256 }}
+  file_name: doltlite.whl
+
+build:
+  number: 0
+  script: |
+    # wheel 就是一个 zip：直接解包到 site-packages，避免在构建时执行 pip
+    unzip -oq doltlite.whl -d "$SP_DIR"
+    cp "$SP_DIR/doltlite-${{ version }}.dist-info/licenses/LICENSE" "$SRC_DIR/LICENSE"
+    rm -rf "$SP_DIR/doltlite-${{ version }}.dist-info"
+    chmod 755 "$SP_DIR"/doltlite/_lib/*
+
+  # libdoltlite 由 ctypes 以绝对路径加载，不需要 conda 的 rpath 改写
+  prefix_detection:
+    ignore_binary_files: true
+  dynamic_linking:
+    binary_relocation: false
+
+requirements:
+  build:
+    - unzip
+  host:
+    # 不带版本约束，variants.yaml 才会为每个 Python 版本生成一个包
+    - python
+  run:
+    # pin 到构建时使用的 Python 版本，包安装在 lib/pythonX.Y/site-packages
+    - python ${{ python }}.*
+
+tests:
+  - script:
+      - |
+        cat > test_doltlite.py <<'PY'
+        import os
+        import sqlite3
+        import tempfile
+
+        import doltlite
+
+        lib = doltlite.libdoltlite_path()
+        print("libdoltlite:", lib)
+        assert os.path.isfile(lib), lib
+
+        db = os.path.join(tempfile.mkdtemp(), "repo.db")
+        con = sqlite3.connect(db)
+        assert con.execute("select doltlite_engine()").fetchone() == ("prolly",)
+        con.execute("create table t(x int)")
+        con.execute("insert into t values (1)")
+        con.execute("select dolt_commit('-A', '-m', 'init')").fetchone()
+        messages = [row[0] for row in con.execute("select message from dolt_log")]
+        print("dolt_log:", messages)
+        assert messages[0] == "init", messages
+        con.close()
+        print("doltlite", doltlite.__version__, "OK")
+        PY
+        python test_doltlite.py
+
+about:
+  homepage: https://github.com/dolthub/doltlite-python
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: 'Python loader for doltlite — Dolt version control through SQLite''s drop-in API.'
+  description: |
+    A Python loader for doltlite: Dolt version control through SQLite's drop-in API.
+
+    Importing doltlite makes libdoltlite the active SQLite engine for the current
+    interpreter, so the standard sqlite3 module transparently gains dolt_commit,
+    dolt_branch, dolt_merge, dolt_log, dolt_diff_<table>, and the other Dolt SQL
+    functions and virtual tables. The wheel bundles a precompiled libdoltlite for
+    Linux (x86_64, aarch64) and macOS (arm64).
+  repository: https://github.com/dolthub/doltlite-python
+
+extra:
+  recipe-maintainers:
+    - SilenWang

@@ -1,0 +1,29 @@
+[workspace]
+authors = ["Sylens Wong <qiumin14@163.com>"]
+channels = ["conda-forge"]
+name = "doltlite-recipe"
+platforms = ["linux-aarch64", "linux-64", "osx-arm64"]
+version = "0.1.0"
+preview = ["pixi-build"]
+
+[dependencies]
+rattler-build = "*"
+python = "3.13.*"
+
+# doltlite 的 source 是 PyPI 上固定文件名的 wheel，rattler-build 无法从
+# files.pythonhosted.org 的 URL 自动探测版本；用脚本按 PyPI JSON 更新
+# recipe.yaml 里的 version / wheel URL / SHA256。
+[tasks.update]
+cmd = "python update-recipe.py"
+
+[tasks.build]
+cmd = "TARGET_PLATFORM={{ platform }} pixi build -t {{ platform }}"
+args = ["platform"]
+
+# pixi build 只负责打包，recipe 里的 tests 需要单独运行
+[tasks.test]
+cmd = "bash test.sh"
+
+[package.build.backend]
+name = "pixi-build-rattler-build"
+version = "0.3.*"

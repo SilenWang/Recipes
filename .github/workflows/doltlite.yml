@@ -1,0 +1,81 @@
+name: doltlite
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时检查一次
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - doltlite/**
+      - .github/workflows/doltlite.yml
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-64
+            os: ubuntu-latest
+          - platform: linux-aarch64
+            os: ubuntu-24.04-arm
+          - platform: osx-arm64
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          repository: SilenWang/Recipes
+
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.68.1
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          working-directory: doltlite
+
+      - name: Check PyPI and published versions
+        id: check
+        if: github.event_name != 'pull_request'
+        run: |
+          cd doltlite
+
+          latest=$(pixi run python -c "import json, urllib.request; print(json.load(urllib.request.urlopen('https://pypi.org/pypi/doltlite/json'))['info']['version'])")
+          published=$(pixi search -q --no-progress -p ${{ matrix.platform }} -c https://prefix.dev/sylens doltlite | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+
+          echo "PyPI: $latest"
+          echo "Published: $published"
+
+          if [ "$latest" = "$published" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update recipe from PyPI
+        if: github.event_name != 'pull_request'
+        run: |
+          cd doltlite
+          pixi run update
+
+      - name: Build package
+        if: github.event_name == 'pull_request' || steps.check.outputs.build == 'true'
+        run: |
+          cd doltlite
+          pixi run build ${{ matrix.platform }}
+
+      - name: Test package
+        if: github.event_name == 'pull_request' || steps.check.outputs.build == 'true'
+        run: |
+          cd doltlite
+          pixi run test
+
+      - name: Publish to prefix.dev
+        if: github.event_name != 'pull_request' && steps.check.outputs.build == 'true'
+        run: |
+          cd doltlite
+          pixi upload prefix doltlite*.conda -c sylens

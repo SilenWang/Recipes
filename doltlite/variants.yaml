@@ -1,0 +1,8 @@
+# doltlite 的 Python loader 是纯 Python 代码，但 wheel 内含平台特定的
+# libdoltlite，因此不能做成 noarch；按 Python 版本各构建一个包。
+python:
+  - "3.10"
+  - "3.11"
+  - "3.12"
+  - "3.13"
+  - "3.14"
