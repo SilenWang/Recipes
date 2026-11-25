@@ -1,6 +1,12 @@
 name: doltlite
 
 on:
+  # 合并到 main 后立即构建并发布，不等下一次定时任务
+  push:
+    branches: [main]
+    paths:
+      - doltlite/**
+      - .github/workflows/doltlite.yml
   schedule:
     - cron: '0 */6 * * *'  # 每6小时检查一次
   workflow_dispatch:
@@ -8,6 +14,10 @@ on:
     paths:
       - doltlite/**
       - .github/workflows/doltlite.yml
+
+concurrency:
+  group: doltlite-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
