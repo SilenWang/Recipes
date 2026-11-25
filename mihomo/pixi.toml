@@ -22,4 +22,4 @@ depends-on = [{ task = "bump", args = ["{{ platform }}"] }]
 
 [package.build.backend]
 name = "pixi-build-rattler-build"
-version = "0.3.*" 
+version = "0.4.*" 
